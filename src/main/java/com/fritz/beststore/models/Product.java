@@ -1,7 +1,7 @@
 package com.fritz.beststore.models;
 
 import jakarta.persistence.*;
-import java.sql.Date;
+import java.util.Date;  // Use java.util.Date instead of java.sql.Date
 
 @Entity
 @Table(name = "products")
@@ -19,8 +19,8 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private Date createdAt;
-    private String imageFileName;
+    private Date createdAt;  // Use java.util.Date
+    private String imageFileName;  // Change to String to store file path or use byte[] to store the file itself
 
     // Getters and setters
     public int getId() {
@@ -34,7 +34,6 @@ public class Product {
     public String getName() {
         return name;
     }
-
 
     public void setName(String name) {
         this.name = name;
@@ -80,11 +79,11 @@ public class Product {
         this.createdAt = createdAt;
     }
 
-    public String getImageFileName() {
+    public String getImageFileName() {  // Getter for file path (if changed to String)
         return imageFileName;
     }
 
-    public void setImageFileName(String imageFileName) {
+    public void setImageFileName(String imageFileName) {  // Setter for file path (if changed to String)
         this.imageFileName = imageFileName;
     }
 }
