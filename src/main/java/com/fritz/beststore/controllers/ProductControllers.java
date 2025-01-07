@@ -1,6 +1,7 @@
 package com.fritz.beststore.controllers;
 
 import com.fritz.beststore.models.Product;
+import com.fritz.beststore.models.ProductDto;
 import com.fritz.beststore.services.ProductsRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+
 
 @Controller
 @RequestMapping("/products")
@@ -26,6 +28,14 @@ public class ProductControllers {
         // Add the list of products to the model
         model.addAttribute("products", products);
         // Return the view name to be rendered (index.html inside the 'products' folder)
-        return "products/index";
+        return "products/index";  // Ensure you have 'src/main/resources/templates/products/index.html'
+    }
+
+    @GetMapping("/create")
+    public String showCreatePage(Model model) {
+        ProductDto productDto = new ProductDto();
+        model.addAttribute("productDto", productDto);
+        // Return the correct template name here
+        return "products/Createproduct";  // Make sure 'Createproduct.html' exists in the 'templates/products' folder
     }
 }
