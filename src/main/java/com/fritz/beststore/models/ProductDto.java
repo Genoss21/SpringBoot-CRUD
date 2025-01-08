@@ -1,9 +1,11 @@
 package com.fritz.beststore.models;
 
+import java.util.Date;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
 public class ProductDto {
@@ -24,7 +26,11 @@ public class ProductDto {
     private String description;
 
     private MultipartFile imageFile;
+    private String imageFileName; // Field for the image file name
+    private int id; // Field for product id
+    private Date createdAt; // Field for creation date
 
+    // Getters and Setters
     public String getName() {
         return name;
     }
@@ -73,4 +79,27 @@ public class ProductDto {
         this.imageFile = imageFile;
     }
 
+    public String getImageFileName() {
+        return imageFileName;
+    }
+
+    public void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 }

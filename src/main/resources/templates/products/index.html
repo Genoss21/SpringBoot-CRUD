@@ -54,7 +54,7 @@
                         <td class="px-6 py-4" th:text="${product.createdAt.toString().substring(0, 10)}"></td>
                         <td class="px-6 py-4" style="white-space:nowrap">
                             <a class="btn btn-primary btn-sm font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                               th:href="@{/products/edit(id=${product.id})}">Edit</a>
+                            th:href="@{/products/edit(id=${product.id})}">Edit</a>
                             <a class="btn btn-danger btn-sm font-medium text-red-600 dark:text-red-500 hover:underline"
                                th:href="@{/products/delete(id=${product.id})}"
                                onclick="return confirm('Are you sure?')">Delete</a>
