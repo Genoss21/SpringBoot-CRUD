@@ -117,6 +117,7 @@ public String createProduct(@Valid @ModelAttribute ProductDto productDto, Bindin
         return "products/DetailsProduct";
     }
 
+
     @GetMapping("/edit")
     public String showEditPage(@RequestParam int id, Model model) {
         try {

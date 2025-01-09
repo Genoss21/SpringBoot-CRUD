@@ -47,7 +47,7 @@
                         <td class="px-6 py-4" th:text="${product.name}"></td>
                         <td class="px-6 py-4" th:text="${product.brand}"></td>
                         <td class="px-6 py-4" th:text="${product.category}"></td>
-                        <td class="px-6 py-4" th:text="@{${product.price} + '$'}"></td>
+                        <td class="px-6 py-4" th:text="@{'$ '+ ${product.price}}"></td>
                         <td class="px-6 py-4">
                             <img th:src="@{'/images/' + ${product.imageFileName}}" alt="Product Image" width="100" class="rounded">
                         </td>
