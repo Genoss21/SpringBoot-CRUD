@@ -175,4 +175,19 @@ public String createProduct(@Valid @ModelAttribute ProductDto productDto, Bindin
         return "redirect:/products";
     }
 
+    @GetMapping("/delete")
+    public String deleteProduct(@RequestParam int id, Model model) {
+        try {
+            Product product = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+            String uploadDir = "public/images/";
+            Path imagePath = Paths.get(uploadDir + product.getImageFileName());
+            Files.deleteIfExists(imagePath);
+            repo.delete(product);
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Error deleting product: " + ex.getMessage());
+            return "errorPage";
+        }
+        return "redirect:/products";
+    }
+
 }
