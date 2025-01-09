@@ -7,14 +7,14 @@ import com.fritz.beststore.services.ProductsRepository;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -23,9 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Date;
-import java.util.List;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/products")
@@ -34,14 +31,14 @@ public class ProductControllers {
     @Autowired
     private ProductsRepository repo;
 
-    @GetMapping({"", "/"})
-    public String showProductList(Model model) {
-        // Fetch all products from the repository
-        List<Product> products = repo.findAll(Sort.by(Sort.Direction.DESC, "id"));
-        // Add the list of products to the model
-        model.addAttribute("products", products);
-        // Return the view name to be rendered (index.html inside the 'products' folder)
-        return "products/index";  // Ensure you have 'src/main/resources/templates/products/index.html'
+    @GetMapping({"", "/"} )
+    public String showProductList(@RequestParam(defaultValue = "0") int page, Model model) {
+        int pageSize = 10;
+        Page<Product> productsPage = repo.findAll(PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id")));
+        model.addAttribute("products", productsPage.getContent());
+        model.addAttribute("totalPages", productsPage.getTotalPages());
+        model.addAttribute("currentPage", page);
+        return "products/index";
     }
 
     @GetMapping("/create")
@@ -53,87 +50,128 @@ public class ProductControllers {
     }
 
     @PostMapping("/create")
-    public String createProduct(@Valid @ModelAttribute ProductDto productDto,
-        BindingResult result) {
-        //TODO: process POST request
-
-        if (productDto.getImageFile().isEmpty()) {
-            result.addError(new FieldError("productDto", "imageFile", "The image file is required"));
-        }
-
-        if (result.hasErrors()) {
-            return "products/CreateProduct";
-        }
-
-        //save image file
-        MultipartFile image = productDto.getImageFile();
-        Date createdAt = new Date();
-        String storageFileName = createdAt.getTime() + "_" + image.getOriginalFilename();
-
-        try {
-            // Define the upload directory
-            String uploadDir = "public/images";
-            Path uploadPath = Paths.get(uploadDir);
-        
-            // Ensure the directory exists; create it if not
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-        
-            // Save the uploaded image to the folder
-            try (InputStream inputStream = image.getInputStream()) {
-                Path filePath = uploadPath.resolve(storageFileName); // Append the file name to the directory
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (Exception ex) {
-            // Handle exceptions and log the error
-            System.err.println("Error saving file: " + ex.getMessage());
-        }
-        
-        Product product = new Product();
-        product.setName(productDto.getName());
-        product.setBrand(productDto.getBrand());
-        product.setCategory(productDto.getCategory());
-        product.setPrice(productDto.getPrice());
-        product.setDescription(productDto.getDescription());
-        product.setCreatedAt(createdAt);
-        product.setImageFileName(storageFileName);   
-        
-        repo.save(product);
-        
-        return "redirect:/products";
+public String createProduct(@Valid @ModelAttribute ProductDto productDto, BindingResult result) {
+    if (productDto.getImageFile().isEmpty()) {
+        result.addError(new FieldError("productDto", "imageFile", "The image file is required"));
     }
-    @GetMapping("/edit")
-public String showEditPage(Model model, @RequestParam int id) {
+
+    if (result.hasErrors()) {
+        return "products/CreateProduct";
+    }
+
+    // Save image file
+    MultipartFile image = productDto.getImageFile();
+    Date createdAt = new Date();
+    String storageFileName = createdAt.getTime() + "_" + image.getOriginalFilename();
+
     try {
-        // Fetch the product by id
-        Product product = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        // Define the upload directory
+        String uploadDir = "public/images";
+        Path uploadPath = Paths.get(uploadDir);
 
-        // Create and populate the ProductDto with product data
-        ProductDto productDto = new ProductDto();
-        productDto.setName(product.getName());
-        productDto.setBrand(product.getBrand());
-        productDto.setCategory(product.getCategory());
-        productDto.setPrice(product.getPrice());
-        productDto.setDescription(product.getDescription());
-        productDto.setId(product.getId());
-        productDto.setImageFileName(product.getImageFileName());
+        // Ensure the directory exists; create it if not
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
 
-        // Ensure the createdAt field is set
-        productDto.setCreatedAt(product.getCreatedAt()); // Assuming createdAt is a field in Product
-
-        // Add ProductDto to the model
-        model.addAttribute("productDto", productDto);
+        // Save the uploaded image to the folder
+        try (InputStream inputStream = image.getInputStream()) {
+            Path filePath = uploadPath.resolve(storageFileName); // Append the file name to the directory
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        }
     } catch (Exception ex) {
-        System.out.println("Exception: " + ex.getMessage());
-        // Optionally add a message to the model or handle the error gracefully
-        model.addAttribute("errorMessage", "Product not found");
-        return "errorPage"; // Redirect to an error page if needed
+        // Handle exceptions and log the error
+        System.err.println("Error saving file: " + ex.getMessage());
     }
 
-    return "products/EditProduct"; // Return to the EditProduct page
+    Product product = new Product();
+    product.setName(productDto.getName());
+    product.setBrand(productDto.getBrand());
+    product.setCategory(productDto.getCategory());
+    product.setPrice(productDto.getPrice());
+    product.setDescription(productDto.getDescription());
+    product.setCreatedAt(createdAt);
+    product.setImageFileName(storageFileName);
+
+    try {
+        repo.save(product); // Save to database
+    } catch (Exception ex) {
+        System.err.println("Error saving product: " + ex.getMessage());
+        result.rejectValue("name", "error.product", "Error saving product: " + ex.getMessage());
+        return "products/CreateProduct";
+    }
+
+    return "redirect:/products";
 }
 
-    
+
+    @GetMapping("/details")
+    public String showProductDetails(@RequestParam int id, Model model) {
+        try {
+            Product product = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+            model.addAttribute("product", product);
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Product not found");
+            return "errorPage";
+        }
+        return "products/DetailsProduct";
+    }
+
+    @GetMapping("/edit")
+    public String showEditPage(@RequestParam int id, Model model) {
+        try {
+            Product product = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+            ProductDto productDto = new ProductDto();
+            productDto.setName(product.getName());
+            productDto.setBrand(product.getBrand());
+            productDto.setCategory(product.getCategory());
+            productDto.setPrice(product.getPrice());
+            productDto.setDescription(product.getDescription());
+            productDto.setId(product.getId());
+            productDto.setImageFileName(product.getImageFileName());
+            productDto.setCreatedAt(product.getCreatedAt());
+            model.addAttribute("productDto", productDto);
+        } catch (Exception ex) {
+            model.addAttribute("errorMessage", "Product not found");
+            return "errorPage";
+        }
+        return "products/EditProduct";
+    }
+
+    @PostMapping("/edit")
+    public String updateProduct(@RequestParam int id, @Valid @ModelAttribute ProductDto productDto, BindingResult result) {
+        try {
+            Product product = repo.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+
+            if (!productDto.getImageFile().isEmpty()) {
+                // Delete old image if new one is uploaded
+                String uploadDir = "public/images/";
+                Path oldImagePath = Paths.get(uploadDir + product.getImageFileName());
+                Files.deleteIfExists(oldImagePath);
+
+                MultipartFile image = productDto.getImageFile();
+                Date createdAt = new Date();
+                String storageFileName = createdAt.getTime() + "_" + image.getOriginalFilename();
+
+                // Save new image file
+                try (InputStream inputStream = image.getInputStream()) {
+                    Files.copy(inputStream, Paths.get(uploadDir + storageFileName), StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                product.setImageFileName(storageFileName);
+            }
+
+            product.setName(productDto.getName());
+            product.setBrand(productDto.getBrand());
+            product.setCategory(productDto.getCategory());
+            product.setPrice(productDto.getPrice());
+            product.setDescription(productDto.getDescription());
+            repo.save(product);
+        } catch (Exception ex) {
+            result.rejectValue("name", "error.product", "Error updating product: " + ex.getMessage());
+            return "products/EditProduct";
+        }
+        return "redirect:/products";
+    }
 
 }

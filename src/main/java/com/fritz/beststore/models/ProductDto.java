@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class ProductDto {
@@ -16,19 +17,32 @@ public class ProductDto {
     private String brand;
 
     @NotEmpty(message = "The category is required")
-    private String category; 
+    private String category;
 
-    @Min(0)
-    private double price;
+    @NotNull(message = "The price is required")
+    @Min(value = 0, message = "The price must be at least 0")
+    private Double price;
 
-    @Size(min = 10, message = "The description should be at least 10 characters")
-    @Size(max = 2000, message = "The description cannot exceed 2000 characters")
+    @Size(min = 10, max = 2000, message = "The description should be between 10 and 2000 characters")
     private String description;
 
     private MultipartFile imageFile;
-    private String imageFileName; // Field for the image file name
-    private int id; // Field for product id
-    private Date createdAt; // Field for creation date
+
+    private String imageFileName;
+
+    // Remove @NotNull for id, as it is typically assigned by the database on creation
+    private Integer id;
+
+    // Remove createdAt, as it is set in the controller
+    private Date createdAt;
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 
     // Getters and Setters
     public String getName() {
@@ -55,11 +69,11 @@ public class ProductDto {
         this.category = category;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
@@ -87,19 +101,11 @@ public class ProductDto {
         this.imageFileName = imageFileName;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
     }
 }
